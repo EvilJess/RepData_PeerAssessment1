@@ -1,23 +1,19 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 Load data from file and ensure the date column is in the correct date format. Also includes the ggplot2 library for the later plots.
-```{r}
+
+```r
 library(ggplot2)
 data <- read.csv(unz("activity.zip", "activity.csv"))
 data$date <- as.POSIXct(data$date)
-
 ```
 
 ## What is mean total number of steps taken per day?
 Remove NAs from the data then create a vector of the daily totals, also create a vector of dates. 
-```{r}
+
+```r
 dataNoNA<-na.omit(data)
 totalSteps<-tapply(dataNoNA$steps, as.POSIXct(trunc(dataNoNA$date, "day")), sum)
 dates<-names(totalSteps)
@@ -25,70 +21,109 @@ dates<-as.Date(dates)
 ```
 
 Plot the daily totals against their dates.
-```{r}
+
+```r
 plot(dates, totalSteps, type="h", xlab="Dates", ylab="Steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
 Calculate the mean daily steps and median daily steps.
-```{r}
+
+```r
 mean(totalSteps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(totalSteps)
+```
+
+```
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
 Calculate the interval means.
-```{r}
+
+```r
 mStepsInterval = tapply(dataNoNA$steps, dataNoNA$interval, mean)
 ```
 
 Plot the interval means.
-```{r}
+
+```r
 plot(names(mStepsInterval), mStepsInterval, type="l", xlab="Daily Interval", ylab="Mean Steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+
 Find the interval with the most average steps. 
-```{r}
+
+```r
 which.max(mStepsInterval)
+```
+
+```
+## 835 
+## 104
 ```
 
 The interval with the max mean steps is 835 (position 104 in the vector)
 
 ## Imputing missing values
-Merge the means for each interval into the data creating the "meanSteps" coloumn. 
-```{r}
+Merge the means for each interval into the data and replace the NAs in the data with the mean for that interval.
+
+```r
 mStepsDF<-as.data.frame(cbind(names(mStepsInterval), as.numeric(mStepsInterval)))
 names(mStepsDF)<-(c("interval", "meanSteps"))
 mStepsDF$meanSteps<-as.numeric(levels(mStepsDF$meanSteps)[mStepsDF$meanSteps])
 dataWMeans<-merge(data, mStepsDF, "interval")
-```
-
-Replace the NAs in the data with the mean for that interval.
-```{r}
 dataWMeans$steps[is.na(dataWMeans$steps)] <- dataWMeans$meanSteps[is.na(dataWMeans$steps)]
 ```
 
 Recreate the vectors of daily totals and dates.
-```{r}
+
+```r
 totalSteps <- tapply(dataWMeans$steps, as.POSIXct(trunc(dataWMeans$date, "day")), sum)
 dates<-names(totalSteps)
 dates<-as.Date(dates)
 ```
 
 Plot the daily totals.
-```{r}
+
+```r
 plot(dates, totalSteps, type="h", xlab="Dates", ylab="Steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+
 Recalculate the daily mean and median.
-```{r}
+
+```r
 mean(totalSteps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(totalSteps)
+```
+
+```
+## [1] 10766.19
 ```
 Because most NAs were entire days of data replacing the NAs with the interval mean has replaced several days with the mean, this clustering around the mean has changed the median to be the same as the mean.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 Determine if the day is a weekday or weekend and add those values to a column in the data.
-```{r}
+
+```r
 weekPlacement <-vector(length=nrow(dataWMeans))
 weekPlacement[weekdays(dataWMeans$date)=="Saturday"|weekdays(dataWMeans$date)=="Sunday"] <- "Weekend"
 weekPlacement[weekdays(dataWMeans$date)!="Saturday"& weekdays(dataWMeans$date)!="Sunday"] <- "Weekday"
@@ -97,7 +132,8 @@ dataWWeekPlacement<-cbind(dataWMeans, weekPlacement)
 ```
 
 Calculate the means for each interval on a weekday and weekend. Add these two columns to the data.
-```{r}
+
+```r
 mStepsIntervalDays = tapply(dataWWeekPlacement$steps, list(dataWWeekPlacement$interval,dataWWeekPlacement$weekPlacement), mean)
 mStepsIntervalDays<-as.data.frame(cbind(mStepsIntervalDays, row.names(mStepsIntervalDays)))
 names(mStepsIntervalDays)<-c("weekday","weekend","interval")
@@ -107,15 +143,19 @@ dataWWeekPlacement<-merge(dataWWeekPlacement, mStepsIntervalDays, "interval")
 ```
 
 Replace the meanSteps with the mean for the interval on the applicable day.
-```{r}
+
+```r
 dataWWeekPlacement$meanSteps[dataWWeekPlacement$weekPlacement=="Weekday"] <- dataWWeekPlacement$weekday[dataWWeekPlacement$weekPlacement=="Weekday"]
 
 dataWWeekPlacement$meanSteps[dataWWeekPlacement$weekPlacement=="Weekend"] <- dataWWeekPlacement$weekend[dataWWeekPlacement$weekPlacement=="Weekend"]
 ```
 
 Plot these means in a panel plot separated by weekday/weekend.
-```{r}
+
+```r
 qplot(interval, meanSteps, data = dataWWeekPlacement, facets = weekPlacement~., geom = "line")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png) 
 
 
