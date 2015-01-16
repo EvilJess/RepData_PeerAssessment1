@@ -38,7 +38,7 @@ median(totalSteps)
 ## What is the average daily activity pattern?
 Calculate the interval means.
 ```{r}
-mStepsInterval = tapply(dataNoNA$steps, dataNoNA$interval, mean)
+mStepsInterval<-tapply(dataNoNA$steps, dataNoNA$interval, mean)
 ```
 
 Plot the interval means.
@@ -98,7 +98,7 @@ dataWWeekPlacement<-cbind(dataWMeans, weekPlacement)
 
 Calculate the means for each interval on a weekday and weekend. Add these two columns to the data.
 ```{r}
-mStepsIntervalDays = tapply(dataWWeekPlacement$steps, list(dataWWeekPlacement$interval,dataWWeekPlacement$weekPlacement), mean)
+mStepsIntervalDays<-tapply(dataWWeekPlacement$steps, list(dataWWeekPlacement$interval,dataWWeekPlacement$weekPlacement), mean)
 mStepsIntervalDays<-as.data.frame(cbind(mStepsIntervalDays, row.names(mStepsIntervalDays)))
 names(mStepsIntervalDays)<-c("weekday","weekend","interval")
 mStepsIntervalDays$weekday<-as.numeric(levels(mStepsIntervalDays$weekday)[mStepsIntervalDays$weekday])

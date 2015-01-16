@@ -50,7 +50,7 @@ median(totalSteps)
 Calculate the interval means.
 
 ```r
-mStepsInterval = tapply(dataNoNA$steps, dataNoNA$interval, mean)
+mStepsInterval<-tapply(dataNoNA$steps, dataNoNA$interval, mean)
 ```
 
 Plot the interval means.
@@ -75,13 +75,18 @@ which.max(mStepsInterval)
 The interval with the max mean steps is 835 (position 104 in the vector)
 
 ## Imputing missing values
-Merge the means for each interval into the data and replace the NAs in the data with the mean for that interval.
+Merge the means for each interval into the data creating the "meanSteps" coloumn. 
 
 ```r
 mStepsDF<-as.data.frame(cbind(names(mStepsInterval), as.numeric(mStepsInterval)))
 names(mStepsDF)<-(c("interval", "meanSteps"))
 mStepsDF$meanSteps<-as.numeric(levels(mStepsDF$meanSteps)[mStepsDF$meanSteps])
 dataWMeans<-merge(data, mStepsDF, "interval")
+```
+
+Replace the NAs in the data with the mean for that interval.
+
+```r
 dataWMeans$steps[is.na(dataWMeans$steps)] <- dataWMeans$meanSteps[is.na(dataWMeans$steps)]
 ```
 
@@ -99,7 +104,7 @@ Plot the daily totals.
 plot(dates, totalSteps, type="h", xlab="Dates", ylab="Steps")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
 
 Recalculate the daily mean and median.
 
@@ -134,7 +139,7 @@ dataWWeekPlacement<-cbind(dataWMeans, weekPlacement)
 Calculate the means for each interval on a weekday and weekend. Add these two columns to the data.
 
 ```r
-mStepsIntervalDays = tapply(dataWWeekPlacement$steps, list(dataWWeekPlacement$interval,dataWWeekPlacement$weekPlacement), mean)
+mStepsIntervalDays<-tapply(dataWWeekPlacement$steps, list(dataWWeekPlacement$interval,dataWWeekPlacement$weekPlacement), mean)
 mStepsIntervalDays<-as.data.frame(cbind(mStepsIntervalDays, row.names(mStepsIntervalDays)))
 names(mStepsIntervalDays)<-c("weekday","weekend","interval")
 mStepsIntervalDays$weekday<-as.numeric(levels(mStepsIntervalDays$weekday)[mStepsIntervalDays$weekday])
@@ -156,6 +161,6 @@ Plot these means in a panel plot separated by weekday/weekend.
 qplot(interval, meanSteps, data = dataWWeekPlacement, facets = weekPlacement~., geom = "line")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-15-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-16-1.png) 
 
 
